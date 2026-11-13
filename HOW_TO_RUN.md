@@ -259,6 +259,27 @@ emulator ยังเปิดไม่เสร็จ รอจนเห็น�
 ยังไม่มี emulator (สร้างได้ที่ Android Studio > Device Manager > Create Virtual Device),
 port 3001 ถูกโปรแกรมอื่นใช้อยู่ หรือ server เปิดไม่สำเร็จ (ดูข้อความในหน้าต่าง "Travel Planner server")
 
+### build Android ล้ม ขึ้นว่า `Gradle build failed due to Java/Gradle incompatibility`
+
+เช่น `The Java version used for the build is 25.0.2, which is incompatible with Gradle 8.12`
+
+สาเหตุ: Flutter ในเครื่องเลือกใช้ Java ที่ใหม่เกินไป (Java 24 ขึ้นไป) แต่โปรเจกต์นี้ใช้ Gradle 8.12 ซึ่งรองรับ **Java 17-23** เท่านั้น
+มักเกิดกับเครื่องที่ติดตั้ง JDK รุ่นล่าสุดไว้ และตั้ง `JAVA_HOME` ชี้ไปที่ JDK ตัวนั้น
+
+- ถ้าใช้ `run_all.bat` สคริปต์จะตรวจให้เองก่อน build ถ้าเจอ Java ที่ใช้ไม่ได้ และมี Android Studio อยู่ในเครื่อง จะถามว่าให้สลับไปใช้ Java 21 ที่มากับ Android Studio ไหม กด `Y` แล้วรอ build ต่อได้เลย
+- ถ้าจะแก้เอง ให้บอก Flutter ให้ใช้ Java ที่มากับ Android Studio แล้วเช็กผล
+
+  ```bat
+  flutter config --jdk-dir="C:\Program Files\Android\Android Studio\jbr"
+  cd android
+  gradlew --stop
+  cd ..
+  flutter doctor -v
+  ```
+
+  ใน `flutter doctor -v` บรรทัด `Java version` ต้องเป็น 17 ถึง 21 (เช่น `build 21.0.8`) จากนั้นรัน `flutter run -d emulator` ใหม่
+- ถ้าไม่มี Android Studio ให้ติดตั้ง JDK 17 หรือ 21 (เช่น Eclipse Temurin) แล้วใช้คำสั่ง `flutter config --jdk-dir="โฟลเดอร์ของ JDK นั้น"` แทน
+
 ### build Android ขึ้นคำเตือนเรื่อง Android NDK
 
 ข้อความ `Your project is configured with Android NDK ... shared_preferences_android requires Android NDK ...` เป็นแค่คำเตือน

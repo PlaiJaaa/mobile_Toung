@@ -68,6 +68,17 @@ goto wait_boot_loop
 :boot_ok
 echo       emulator พร้อมแล้ว
 
+rem ---------- ตรวจ Java ที่ Flutter ใช้ build Android ----------
+rem Gradle 8.12 ของโปรเจกต์นี้ใช้ได้กับ Java 17-23 เท่านั้น (Java 24 ขึ้นไป build ไม่ผ่าน)
+echo       ตรวจเวอร์ชัน Java ที่ Flutter ใช้ ...
+set "JMAJOR="
+for /f "tokens=*" %%l in ('flutter doctor -v 2^>nul ^| findstr /c:"Java version"') do if not defined JMAJOR (set "JLINE=%%l" & call :parse_java)
+if not defined JMAJOR goto java_ok
+if %JMAJOR% lss 17 goto java_bad
+if %JMAJOR% gtr 23 goto java_bad
+:java_ok
+if defined JMAJOR echo       Java %JMAJOR% ใช้ได้
+
 rem ---------- 3) รันแอป ----------
 echo [3/3] รันแอปบน emulator [ครั้งแรก build 2-5 นาที]
 echo       ระหว่างรัน: กด r = hot reload, R = hot restart, q = ปิดแอป
@@ -82,6 +93,14 @@ rem ---------- ฟังก์ชันตรวจ server: CODE = 200 (server �
 :check_server
 set "CODE=000"
 for /f %%c in ('curl.exe -s -o nul -m 3 -w "%%{http_code}" http://127.0.0.1:%PORT%/trips 2^>nul') do set "CODE=%%c"
+exit /b 0
+
+rem ---------- ฟังก์ชันอ่านเลขเวอร์ชันหลักของ Java จากบรรทัด "Java version ... (build 21.0.8+...)" ----------
+:parse_java
+rem ตัดทุกอย่างจนถึง "(build " ออก จะเหลือ เช่น 21.0.8+-14196175...
+set "JBUILD=%JLINE:*(build =%"
+if "%JBUILD%"=="%JLINE%" exit /b 0
+for /f "tokens=1 delims=.+- " %%b in ("%JBUILD%") do set "JMAJOR=%%b"
 exit /b 0
 
 rem ---------- ข้อความผิดพลาด ----------
@@ -100,6 +119,29 @@ pause
 exit /b 1
 :no_avd
 echo [ผิดพลาด] ยังไม่มี emulator ในเครื่อง สร้างได้ที่ Android Studio ^> Device Manager ^> Create Virtual Device
+pause
+exit /b 1
+:java_bad
+echo.
+echo [ผิดพลาด] Flutter ใช้ Java %JMAJOR% ในการ build Android แต่โปรเจกต์นี้ต้องใช้ Java 17-23
+echo           (ถ้าใช้ Java 24 ขึ้นไป จะ build ไม่ผ่านและขึ้นว่า Java/Gradle incompatibility)
+set "ASJBR=%ProgramFiles%\Android\Android Studio\jbr"
+if not exist "%ASJBR%\bin\java.exe" goto java_manual
+echo.
+echo พบ Java ที่มากับ Android Studio: %ASJBR%
+choice /c YN /m "ให้ Flutter ใช้ Java ตัวนี้เลยไหม"
+if errorlevel 2 goto java_manual
+call flutter config --jdk-dir="%ASJBR%"
+if exist "android\gradlew.bat" (pushd android & call gradlew.bat --stop >nul 2>nul & popd)
+echo ตั้งค่าเรียบร้อย กำลังรันต่อ ...
+set "JMAJOR="
+goto java_ok
+:java_manual
+echo.
+echo วิธีแก้: ติดตั้ง JDK 17 หรือ 21 (หรือ Android Studio ซึ่งมี Java 21 มาให้) แล้วรันคำสั่ง
+echo     flutter config --jdk-dir="ที่อยู่โฟลเดอร์ JDK"
+echo เช่น flutter config --jdk-dir="C:\Program Files\Android\Android Studio\jbr"
+echo จากนั้นดับเบิลคลิก run_all.bat ใหม่ (ดูรายละเอียดใน HOW_TO_RUN.md หัวข้อ Java/Gradle incompatibility)
 pause
 exit /b 1
 :port_busy
