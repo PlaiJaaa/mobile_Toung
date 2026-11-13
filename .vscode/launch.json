@@ -1,0 +1,21 @@
+{
+  // กด F5 แล้วเลือกได้ว่าจะรันบน Android Emulator หรือ Chrome
+  // ต้องเปิด server ก่อน (ดับเบิลคลิก start_server.bat) และถ้าเลือก Android ต้องเปิด emulator ไว้แล้ว
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Travel Planner: Android Emulator",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "emulator"
+    },
+    {
+      "name": "Travel Planner: Chrome",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "chrome"
+    }
+  ]
+}

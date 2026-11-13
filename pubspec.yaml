@@ -1,0 +1,48 @@
+name: travel_planner
+description: "แอปวางแผนเที่ยว Travel Planner (Project รายวิชา Mobile Development)"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # ข้อความของ widget สำเร็จรูปเป็นภาษาไทย เช่น ปฏิทินเลือกช่วงวันที่ (มากับ Flutter SDK)
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  # เรียก REST API (GET / POST / PUT / PATCH / DELETE) ไปที่ json-server และ Open-Meteo (บทที่ 5)
+  http: ^1.6.0
+  # จำธีมและสกุลเงินหลักไว้ในเครื่อง (บทที่ 6)
+  shared_preferences: ^2.5.3
+  # จัดรูปแบบตัวเลขเงินและวันที่
+  intl: ^0.20.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  # รูปปลายทางฝังไว้ในแอป (ที่มาและสัญญาอนุญาตดู assets/images/CREDITS.md)
+  assets:
+    - assets/images/
+
+  # ฟอนต์ภาษาไทย Prompt (สัญญาอนุญาต OFL ดู assets/fonts/OFL.txt)
+  fonts:
+    - family: Prompt
+      fonts:
+        - asset: assets/fonts/Prompt-Regular.ttf
+        - asset: assets/fonts/Prompt-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Prompt-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Prompt-Bold.ttf
+          weight: 700

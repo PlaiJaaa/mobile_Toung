@@ -1,0 +1,14 @@
+{
+  "name": "travel-planner-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API จำลองของแอป Travel Planner (json-server)",
+  "scripts": {
+    "prestart": "node reset_db.js --if-missing",
+    "start": "json-server --watch db.json --host 127.0.0.1 --port 3001",
+    "reset": "node reset_db.js"
+  },
+  "dependencies": {
+    "json-server": "0.17.4"
+  }
+}

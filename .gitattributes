@@ -1,0 +1,2 @@
+# ไฟล์ .bat ต้องเป็น CRLF ไม่อย่างนั้น cmd อ่าน label ผิด
+*.bat text eol=crlf
