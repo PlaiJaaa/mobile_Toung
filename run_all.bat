@@ -70,14 +70,22 @@ echo       emulator พร้อมแล้ว
 
 rem ---------- ตรวจ Java ที่ Flutter ใช้ build Android ----------
 rem Gradle 8.12 ของโปรเจกต์นี้ใช้ได้กับ Java 17-23 เท่านั้น (Java 24 ขึ้นไป build ไม่ผ่าน)
-echo       ตรวจเวอร์ชัน Java ที่ Flutter ใช้ ...
-set "JMAJOR="
-for /f "tokens=*" %%l in ('flutter doctor -v 2^>nul ^| findstr /c:"Java version"') do if not defined JMAJOR (set "JLINE=%%l" & call :parse_java)
-if not defined JMAJOR goto java_ok
-if %JMAJOR% lss 17 goto java_bad
-if %JMAJOR% gtr 23 goto java_bad
+rem หา java ที่ Flutter ใช้ (บรรทัด "Java binary at:" ใน flutter doctor) ถ้าไม่มีดู JAVA_HOME แล้วค่อยดู PATH
+rem แล้วรัน java -version เองเพื่ออ่านเวอร์ชัน
+echo       ตรวจเวอร์ชัน Java ที่ Flutter ใช้ [ใช้เวลาประมาณ 10-30 วินาที] ...
+set "FJAVA="
+set "JLINE="
+for /f "tokens=*" %%l in ('flutter doctor -v 2^>nul ^| findstr /c:"Java binary at:"') do if not defined JLINE set "JLINE=%%l"
+if defined JLINE set "FJAVA=%JLINE:*Java binary at: =%"
+if not defined FJAVA if defined JAVA_HOME set "FJAVA=%JAVA_HOME%\bin\java"
+if not defined FJAVA for /f "delims=" %%j in ('where java 2^>nul') do if not defined FJAVA set "FJAVA=%%j"
+if not defined FJAVA goto java_missing
+call :java_major "%FJAVA%"
+if not defined JV goto java_missing
+if %JV% lss 17 goto java_bad
+if %JV% gtr 23 goto java_bad
+echo       Java %JV% ใช้ได้ [%FJAVA%]
 :java_ok
-if defined JMAJOR echo       Java %JMAJOR% ใช้ได้
 
 rem ---------- 3) รันแอป ----------
 echo [3/3] รันแอปบน emulator [ครั้งแรก build 2-5 นาที]
@@ -95,12 +103,29 @@ set "CODE=000"
 for /f %%c in ('curl.exe -s -o nul -m 3 -w "%%{http_code}" http://127.0.0.1:%PORT%/trips 2^>nul') do set "CODE=%%c"
 exit /b 0
 
-rem ---------- ฟังก์ชันอ่านเลขเวอร์ชันหลักของ Java จากบรรทัด "Java version ... (build 21.0.8+...)" ----------
-:parse_java
-rem ตัดทุกอย่างจนถึง "(build " ออก จะเหลือ เช่น 21.0.8+-14196175...
-set "JBUILD=%JLINE:*(build =%"
-if "%JBUILD%"=="%JLINE%" exit /b 0
-for /f "tokens=1 delims=.+- " %%b in ("%JBUILD%") do set "JMAJOR=%%b"
+rem ---------- ฟังก์ชันอ่านเลขเวอร์ชันหลักของ java ที่ส่งมา: JV = 21, 25, ... (อ่านไม่ได้ = ว่าง) ----------
+rem java -version พิมพ์ เช่น  openjdk version "21.0.8" 2025-07-15  หรือ  java version "25.0.2" 2026-01-20 LTS
+:java_major
+set "JV="
+set "JVS="
+for /f "tokens=3" %%v in ('call "%~1" -version 2^>^&1 ^| findstr /i /c:" version "') do if not defined JVS set "JVS=%%~v"
+if not defined JVS exit /b 0
+for /f "tokens=1,2 delims=." %%a in ("%JVS%") do (
+  set "JV=%%a"
+  if "%%a"=="1" set "JV=%%b"
+)
+exit /b 0
+
+rem ---------- ฟังก์ชันลองโฟลเดอร์ JDK: ถ้าเป็น Java 17-23 จำไว้ใน GOODJDK ----------
+:try_jdk
+if defined GOODJDK exit /b 0
+if not exist "%~1\bin\java.exe" exit /b 0
+call :java_major "%~1\bin\java.exe"
+if not defined JV exit /b 0
+if %JV% lss 17 exit /b 0
+if %JV% gtr 23 exit /b 0
+set "GOODJDK=%~1"
+set "GOODV=%JV%"
 exit /b 0
 
 rem ---------- ข้อความผิดพลาด ----------
@@ -121,27 +146,38 @@ exit /b 1
 echo [ผิดพลาด] ยังไม่มี emulator ในเครื่อง สร้างได้ที่ Android Studio ^> Device Manager ^> Create Virtual Device
 pause
 exit /b 1
+:java_missing
+echo.
+echo [ผิดพลาด] หา Java ที่ Flutter ใช้ build Android ไม่เจอ หรือเรียกใช้ไม่ได้
+goto java_search
 :java_bad
 echo.
-echo [ผิดพลาด] Flutter ใช้ Java %JMAJOR% ในการ build Android แต่โปรเจกต์นี้ต้องใช้ Java 17-23
-echo           (ถ้าใช้ Java 24 ขึ้นไป จะ build ไม่ผ่านและขึ้นว่า Java/Gradle incompatibility)
-set "ASJBR=%ProgramFiles%\Android\Android Studio\jbr"
-if not exist "%ASJBR%\bin\java.exe" goto java_manual
+echo [ผิดพลาด] Flutter ใช้ Java %JV% ในการ build Android [%FJAVA%]
+echo           แต่โปรเจกต์นี้ต้องใช้ Java 17-23 (Java 24 ขึ้นไปจะขึ้นว่า Java/Gradle incompatibility)
+:java_search
+echo กำลังค้นหา JDK 17-23 ที่ติดตั้งอยู่ในเครื่อง ...
+set "GOODJDK="
+set "GOODV="
+call :try_jdk "%ProgramFiles%\Android\Android Studio\jbr"
+call :try_jdk "%LOCALAPPDATA%\Programs\Android Studio\jbr"
+for /d %%d in ("%ProgramFiles%\Eclipse Adoptium\jdk-*" "%ProgramFiles%\Microsoft\jdk-*" "%ProgramFiles%\Java\jdk*" "%ProgramFiles%\Zulu\zulu*" "%ProgramFiles%\Amazon Corretto\jdk*") do call :try_jdk "%%~d"
+if not defined GOODJDK goto java_manual
 echo.
-echo พบ Java ที่มากับ Android Studio: %ASJBR%
+echo พบ Java %GOODV% ที่ใช้ได้: %GOODJDK%
 choice /c YN /m "ให้ Flutter ใช้ Java ตัวนี้เลยไหม"
 if errorlevel 2 goto java_manual
-call flutter config --jdk-dir="%ASJBR%"
+call flutter config --jdk-dir="%GOODJDK%"
 if exist "android\gradlew.bat" (pushd android & call gradlew.bat --stop >nul 2>nul & popd)
 echo ตั้งค่าเรียบร้อย กำลังรันต่อ ...
-set "JMAJOR="
 goto java_ok
 :java_manual
 echo.
-echo วิธีแก้: ติดตั้ง JDK 17 หรือ 21 (หรือ Android Studio ซึ่งมี Java 21 มาให้) แล้วรันคำสั่ง
-echo     flutter config --jdk-dir="ที่อยู่โฟลเดอร์ JDK"
-echo เช่น flutter config --jdk-dir="C:\Program Files\Android\Android Studio\jbr"
-echo จากนั้นดับเบิลคลิก run_all.bat ใหม่ (ดูรายละเอียดใน HOW_TO_RUN.md หัวข้อ Java/Gradle incompatibility)
+echo วิธีแก้:
+echo   1) ติดตั้ง JDK 21 ด้วยคำสั่งนี้ใน cmd:  winget install EclipseAdoptium.Temurin.21.JDK
+echo      (หรือดาวน์โหลดตัวติดตั้งจาก https://adoptium.net)
+echo   2) ปิดหน้าต่างนี้ แล้วดับเบิลคลิก run_all.bat ใหม่ สคริปต์จะหา JDK 21 เจอและถามให้ใช้เอง
+echo   หรือตั้งเอง: flutter config --jdk-dir="โฟลเดอร์ของ JDK 17-21"
+echo ดูรายละเอียดใน HOW_TO_RUN.md หัวข้อ Java/Gradle incompatibility
 pause
 exit /b 1
 :port_busy

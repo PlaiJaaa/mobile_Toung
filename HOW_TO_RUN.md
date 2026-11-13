@@ -266,7 +266,8 @@ port 3001 ถูกโปรแกรมอื่นใช้อยู่ หร
 สาเหตุ: Flutter ในเครื่องเลือกใช้ Java ที่ใหม่เกินไป (Java 24 ขึ้นไป) แต่โปรเจกต์นี้ใช้ Gradle 8.12 ซึ่งรองรับ **Java 17-23** เท่านั้น
 มักเกิดกับเครื่องที่ติดตั้ง JDK รุ่นล่าสุดไว้ และตั้ง `JAVA_HOME` ชี้ไปที่ JDK ตัวนั้น
 
-- ถ้าใช้ `run_all.bat` สคริปต์จะตรวจให้เองก่อน build ถ้าเจอ Java ที่ใช้ไม่ได้ และมี Android Studio อยู่ในเครื่อง จะถามว่าให้สลับไปใช้ Java 21 ที่มากับ Android Studio ไหม กด `Y` แล้วรอ build ต่อได้เลย
+- ถ้าใช้ `run_all.bat` สคริปต์จะตรวจให้เองก่อน build โดยรัน `java -version` ของ Java ตัวที่ Flutter ใช้จริง ถ้าใช้ไม่ได้ จะค้นหา JDK 17-23 ที่ติดตั้งอยู่ในเครื่อง (Java ของ Android Studio, Temurin, Oracle, Microsoft, Zulu, Corretto) แล้วถามว่าให้ใช้ตัวนั้นไหม กด `Y` แล้วรอ build ต่อได้เลย
+- ถ้าในเครื่องไม่มี JDK ที่ใช้ได้เลย (เช่น Android Studio รุ่นใหม่ที่มากับ Java 25) ให้ติดตั้ง JDK 21 ด้วยคำสั่ง `winget install EclipseAdoptium.Temurin.21.JDK` แล้วดับเบิลคลิก `run_all.bat` ใหม่ สคริปต์จะหาเจอและถามให้ใช้เอง
 - ถ้าจะแก้เอง ให้บอก Flutter ให้ใช้ Java ที่มากับ Android Studio แล้วเช็กผล
 
   ```bat
