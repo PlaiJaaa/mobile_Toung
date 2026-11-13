@@ -69,7 +69,7 @@ goto wait_boot_loop
 echo       emulator พร้อมแล้ว
 
 rem ---------- ตรวจ Java ที่ Flutter ใช้ build Android ----------
-rem Gradle 8.12 ของโปรเจกต์นี้ใช้ได้กับ Java 17-23 เท่านั้น (Java 24 ขึ้นไป build ไม่ผ่าน)
+rem โปรเจกต์นี้ (Gradle 8.14 + AGP 8.7) ทดสอบกับ Java 17-23 ส่วน Java 25 build ไม่ผ่าน
 rem หา java ที่ Flutter ใช้ (บรรทัด "Java binary at:" ใน flutter doctor) ถ้าไม่มีดู JAVA_HOME แล้วค่อยดู PATH
 rem แล้วรัน java -version เองเพื่ออ่านเวอร์ชัน
 echo       ตรวจเวอร์ชัน Java ที่ Flutter ใช้ [ใช้เวลาประมาณ 10-30 วินาที] ...

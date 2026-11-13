@@ -259,11 +259,17 @@ emulator ยังเปิดไม่เสร็จ รอจนเห็น�
 ยังไม่มี emulator (สร้างได้ที่ Android Studio > Device Manager > Create Virtual Device),
 port 3001 ถูกโปรแกรมอื่นใช้อยู่ หรือ server เปิดไม่สำเร็จ (ดูข้อความในหน้าต่าง "Travel Planner server")
 
+### build Android ล้ม ขึ้นว่า `Your project's Gradle version (...) is lower than Flutter's minimum supported version`
+
+เกิดเมื่อใช้ Flutter รุ่นใหม่กว่าที่โปรเจกต์ทดสอบไว้ (ทดสอบกับ Flutter 3.32.7) ซึ่งกำหนด Gradle ขั้นต่ำสูงขึ้น
+โปรเจกต์นี้ตั้ง Gradle ไว้ที่ **8.14.3** แล้ว (ใน `android/gradle/wrapper/gradle-wrapper.properties`) ถ้ายังเจอ ให้ `git pull` เอาเวอร์ชันล่าสุด
+ถ้า Flutter รุ่นที่ใช้ต้องการ Gradle สูงกว่านี้อีก ให้แก้เลขในไฟล์นั้นตามที่ error แจ้ง แล้วรัน `flutter clean` ก่อน build ใหม่
+
 ### build Android ล้ม ขึ้นว่า `Gradle build failed due to Java/Gradle incompatibility`
 
 เช่น `The Java version used for the build is 25.0.2, which is incompatible with Gradle 8.12`
 
-สาเหตุ: Flutter ในเครื่องเลือกใช้ Java ที่ใหม่เกินไป (Java 24 ขึ้นไป) แต่โปรเจกต์นี้ใช้ Gradle 8.12 ซึ่งรองรับ **Java 17-23** เท่านั้น
+สาเหตุ: Flutter ในเครื่องเลือกใช้ Java ที่ใหม่เกินไป (เช่น Java 25) แต่ Gradle 8.x ของโปรเจกต์นี้ใช้ Java รุ่นนั้นไม่ได้ โปรเจกต์นี้ทดสอบกับ **Java 17-23** (เครื่องที่ใช้ทดสอบใช้ Java 21)
 มักเกิดกับเครื่องที่ติดตั้ง JDK รุ่นล่าสุดไว้ และตั้ง `JAVA_HOME` ชี้ไปที่ JDK ตัวนั้น
 
 - ถ้าใช้ `run_all.bat` สคริปต์จะตรวจให้เองก่อน build โดยรัน `java -version` ของ Java ตัวที่ Flutter ใช้จริง ถ้าใช้ไม่ได้ จะค้นหา JDK 17-23 ที่ติดตั้งอยู่ในเครื่อง (Java ของ Android Studio, Temurin, Oracle, Microsoft, Zulu, Corretto) แล้วถามว่าให้ใช้ตัวนั้นไหม กด `Y` แล้วรอ build ต่อได้เลย
