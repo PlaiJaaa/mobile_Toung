@@ -6,8 +6,11 @@ Project รายวิชา Mobile Development เขียนด้วย Flu
 
 ## วิธีรันแบบเร็วที่สุด
 
-ดับเบิลคลิก **`run_all.bat`** ครั้งเดียว จะเปิด server (หน้าต่างแยก) เปิด Android Emulator แล้วรันแอปให้เอง
-ถ้าอยากรันบน Chrome หรือทำทีละขั้น ดู [HOW_TO_RUN.md](HOW_TO_RUN.md)
+- **แค่อยากเปิดใช้แอป:** ดับเบิลคลิก **`run_apk.bat`** จะเปิด server, เปิด Android Emulator แล้วติดตั้งแอปจากไฟล์ `dist/TravelPlanner.apk` ที่ build ไว้แล้ว
+  ต้องมีแค่ Node.js และ Android Studio **ไม่ต้องมี Flutter** (เลี่ยงปัญหาเวอร์ชัน Flutter / Gradle / Java ไม่ตรงกัน)
+- **จะแก้โค้ด:** ดับเบิลคลิก **`run_all.bat`** จะเปิด server, เปิด emulator แล้ว `flutter run` ให้ (ต้องมี Flutter)
+
+วิธีละเอียดทีละขั้น และวิธีรันบน Chrome ดูที่ [HOW_TO_RUN.md](HOW_TO_RUN.md)
 
 > server ของแอปนี้ใช้ **port 3001** จึงเปิดพร้อมกับแอปอื่นที่ใช้ port 3000 (เช่น แอปหอพัก) ได้โดยไม่ชนกัน
 
