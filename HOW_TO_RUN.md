@@ -262,8 +262,21 @@ port 3001 ถูกโปรแกรมอื่นใช้อยู่ หร
 ### build Android ล้ม ขึ้นว่า `Your project's Gradle version (...) is lower than Flutter's minimum supported version`
 
 เกิดเมื่อใช้ Flutter รุ่นใหม่กว่าที่โปรเจกต์ทดสอบไว้ (ทดสอบกับ Flutter 3.32.7) ซึ่งกำหนด Gradle ขั้นต่ำสูงขึ้น
-โปรเจกต์นี้ตั้ง Gradle ไว้ที่ **8.14.3** แล้ว (ใน `android/gradle/wrapper/gradle-wrapper.properties`) ถ้ายังเจอ ให้ `git pull` เอาเวอร์ชันล่าสุด
+โปรเจกต์นี้ตั้ง Gradle ไว้ที่ **8.14.3** (ใน `android/gradle/wrapper/gradle-wrapper.properties`) และ Android Gradle Plugin ไว้ที่ **8.11.1** (ใน `android/settings.gradle.kts`)
+ทดสอบแล้วว่า build ผ่านบน Flutter 3.32.7 และรองรับขั้นต่ำของ Flutter 3.47 ถ้ายังเจอ ให้ `git pull` เอาเวอร์ชันล่าสุด
+ข้อความ `Flutter support for your project's Gradle version (8.14.3) will soon be dropped` เป็นแค่คำเตือน ไม่ทำให้ build ล้ม
 ถ้า Flutter รุ่นที่ใช้ต้องการ Gradle สูงกว่านี้อีก ให้แก้เลขในไฟล์นั้นตามที่ error แจ้ง แล้วรัน `flutter clean` ก่อน build ใหม่
+
+### build Android ล้ม ขึ้นว่า `Could not find aapt2-...-windows.jar`
+
+เกิดเมื่อเน็ตสะดุดตอน Gradle ดาวน์โหลดเครื่องมือของ Android ครั้งแรก แล้ว Gradle จำผล "หาไม่เจอ" ไว้ ให้บังคับโหลดใหม่
+
+```bat
+cd android
+gradlew --refresh-dependencies
+cd ..
+flutter run -d emulator
+```
 
 ### build Android ล้ม ขึ้นว่า `Gradle build failed due to Java/Gradle incompatibility`
 
